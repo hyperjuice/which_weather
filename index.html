@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Which Weather?</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.25rem;
+      background: linear-gradient(90deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 2rem;
+    }
+
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(96, 165, 250, 0.15);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      color: #60a5fa;
+      padding: 0.5rem 1.25rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      margin-bottom: 2rem;
+    }
+    .refresh-btn:hover { background: rgba(96, 165, 250, 0.25); }
+    .refresh-btn:active { transform: scale(0.97); }
+    .refresh-btn svg { transition: transform 0.4s; }
+    .refresh-btn.spinning svg { transform: rotate(360deg); }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    @media (max-width: 540px) {
+      .comparison { grid-template-columns: 1fr; }
+    }
+
+    .city-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.25rem;
+      padding: 1.75rem;
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s;
+    }
+    .city-card:hover { transform: translateY(-2px); }
+
+    /* Search */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.6rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #475569;
+      pointer-events: none;
+    }
+
+    .city-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.6rem;
+      padding: 0.55rem 0.75rem 0.55rem 2rem;
+      color: #e2e8f0;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .city-input::placeholder { color: #475569; }
+    .city-input:focus { border-color: rgba(96, 165, 250, 0.5); }
+
+    .suggestions {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #1e2a3a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.6rem;
+      overflow: hidden;
+      z-index: 10;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .suggestion-item {
+      padding: 0.6rem 0.85rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      color: #cbd5e1;
+      transition: background 0.12s;
+    }
+    .suggestion-item:hover { background: rgba(96, 165, 250, 0.15); color: #e2e8f0; }
+    .suggestion-item + .suggestion-item { border-top: 1px solid rgba(255, 255, 255, 0.05); }
+    .suggestion-item .sugg-state { color: #475569; font-size: 0.8rem; }
+
+    /* Weather display */
+    .local-time {
+      font-size: 0.82rem;
+      color: #60a5fa;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 1rem;
+      min-height: 1rem;
+    }
+
+    .weather-icon {
+      font-size: 3.5rem;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .temp-main {
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .condition {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin-bottom: 1.5rem;
+      min-height: 1.25rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #475569;
+      margin-bottom: 0.25rem;
+    }
+    .stat-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .stat-full { grid-column: 1 / -1; }
+
+    .aqi-row { display: flex; align-items: center; gap: 0.5rem; }
+    .aqi-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+    }
+    .aqi-good         { background: rgba(34,197,94,0.15);   color: #22c55e; }
+    .aqi-moderate     { background: rgba(234,179,8,0.15);   color: #eab308; }
+    .aqi-sensitive    { background: rgba(249,115,22,0.15);  color: #f97316; }
+    .aqi-unhealthy    { background: rgba(239,68,68,0.15);   color: #ef4444; }
+    .aqi-very         { background: rgba(168,85,247,0.15);  color: #a855f7; }
+    .aqi-hazardous    { background: rgba(127,29,29,0.3);    color: #fca5a5; }
+
+    .loading .temp-main,
+    .loading .condition,
+    .loading .stat-value,
+    .loading .local-time {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 0.4rem;
+      color: transparent !important;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .loading .temp-main { width: 5rem; height: 3rem; display: block; }
+    .loading .condition { width: 8rem; height: 1rem; display: block; }
+    .loading .stat-value { width: 3.5rem; height: 1rem; display: block; }
+    .loading .local-time { width: 6rem; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+
+    .diff-bar {
+      width: 100%;
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+      padding: 1.25rem 1.75rem;
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+    .diff-label { font-size: 0.78rem; color: #475569; margin-bottom: 0.4rem; }
+    .diff-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #60a5fa;
+    }
+    .diff-value.warmer { color: #f97316; }
+
+    .timestamp {
+      margin-top: 1.5rem;
+      font-size: 0.75rem;
+      color: #334155;
+    }
+
+    .error-msg {
+      color: #f87171;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Which Weather?</h1>
+<p class="subtitle">Compare any two U.S. cities</p>
+
+<button class="refresh-btn" id="refreshBtn" onclick="fetchAll()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+  </svg>
+  Refresh
+</button>
+
+<div class="comparison">
+  <div class="city-card loading" id="card-left">
+    <div class="search-wrap">
+      <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" class="city-input" id="input-left" placeholder="Search U.S. city…" value="Skokie, Illinois" autocomplete="off" spellcheck="false" />
+      <div class="suggestions" id="sugg-left"></div>
+    </div>
+    <div class="local-time" id="time-left">&nbsp;</div>
+    <div class="weather-icon" id="icon-left">—</div>
+    <div class="temp-main" id="temp-left">&nbsp;</div>
+    <div class="condition" id="cond-left">&nbsp;</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-left">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-left">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-left">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-left">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Population</div><div class="stat-value" id="pop-left">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-left">&nbsp;</div><div class="aqi-badge" id="aqi-badge-left"></div></div></div>
+    </div>
+  </div>
+
+  <div class="city-card loading" id="card-right">
+    <div class="search-wrap">
+      <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" class="city-input" id="input-right" placeholder="Search U.S. city…" value="Berkeley, California" autocomplete="off" spellcheck="false" />
+      <div class="suggestions" id="sugg-right"></div>
+    </div>
+    <div class="local-time" id="time-right">&nbsp;</div>
+    <div class="weather-icon" id="icon-right">—</div>
+    <div class="temp-main" id="temp-right">&nbsp;</div>
+    <div class="condition" id="cond-right">&nbsp;</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-right">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-right">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-right">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-right">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Population</div><div class="stat-value" id="pop-right">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-right">&nbsp;</div><div class="aqi-badge" id="aqi-badge-right"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="diff-bar" id="diffBar" style="display:none">
+  <div class="diff-label">Temperature difference</div>
+  <div class="diff-value" id="diffValue">—</div>
+</div>
+
+<div class="timestamp" id="timestamp"></div>
+
+<script>
+  const WMO_CODES = {
+    0:["Clear sky","☀️"],1:["Mainly clear","🌤️"],2:["Partly cloudy","⛅"],3:["Overcast","☁️"],
+    45:["Foggy","🌫️"],48:["Icy fog","🌫️"],
+    51:["Light drizzle","🌦️"],53:["Drizzle","🌦️"],55:["Heavy drizzle","🌧️"],
+    61:["Light rain","🌧️"],63:["Rain","🌧️"],65:["Heavy rain","🌧️"],
+    71:["Light snow","🌨️"],73:["Snow","❄️"],75:["Heavy snow","❄️"],77:["Snow grains","🌨️"],
+    80:["Light showers","🌦️"],81:["Showers","🌧️"],82:["Heavy showers","⛈️"],
+    85:["Snow showers","🌨️"],86:["Heavy snow showers","❄️"],
+    95:["Thunderstorm","⛈️"],96:["Thunderstorm w/ hail","⛈️"],99:["Thunderstorm w/ hail","⛈️"],
+  };
+
+  function aqiInfo(aqi) {
+    if (aqi <= 50)  return ["Good",           "aqi-good"];
+    if (aqi <= 100) return ["Moderate",        "aqi-moderate"];
+    if (aqi <= 150) return ["Sensitive Groups","aqi-sensitive"];
+    if (aqi <= 200) return ["Unhealthy",       "aqi-unhealthy"];
+    if (aqi <= 300) return ["Very Unhealthy",  "aqi-very"];
+    return                  ["Hazardous",       "aqi-hazardous"];
+  }
+
+  function wmoInfo(code, isDay) {
+    const entry = WMO_CODES[code];
+    if (!entry) return ["Unknown", "🌡️"];
+    let icon = entry[1];
+    if ((code === 0 || code === 1) && !isDay) icon = "🌙";
+    return [entry[0], icon];
+  }
+
+  const cities = {
+    left:  { name: "Skokie",   state: "Illinois",   lat: 42.0334, lon: -87.7334,  timezone: null, temp: null, population: 67824  },
+    right: { name: "Berkeley", state: "California", lat: 37.8716, lon: -122.2727, timezone: null, temp: null, population: 124321 },
+  };
+
+  function localTime(tz) {
+    return new Date().toLocaleTimeString([], {
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: false, timeZone: tz,
+    });
+  }
+
+  setInterval(() => {
+    for (const [side, city] of Object.entries(cities)) {
+      if (city.timezone) {
+        document.getElementById(`time-${side}`).textContent = localTime(city.timezone);
+      }
+    }
+  }, 1000);
+
+  async function fetchCard(side) {
+    const city = cities[side];
+    document.getElementById(`card-${side}`).classList.add("loading");
+    document.getElementById(`icon-${side}`).textContent = "—";
+
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}` +
+      `&current=temperature_2m,apparent_temperature,relative_humidity_2m,` +
+      `wind_speed_10m,weathercode,cloud_cover,is_day` +
+      `&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${city.lat}&longitude=${city.lon}&current=us_aqi&timezone=auto`;
+
+    const [wRes, aRes] = await Promise.all([fetch(weatherUrl), fetch(aqiUrl)]);
+    if (!wRes.ok) throw new Error(`HTTP ${wRes.status}`);
+    const data = await wRes.json();
+    const c = data.current;
+    const [condition, icon] = wmoInfo(c.weathercode, c.is_day);
+
+    city.timezone = data.timezone;
+    city.temp = c.temperature_2m;
+
+    document.getElementById(`time-${side}`).textContent  = localTime(data.timezone);
+    document.getElementById(`icon-${side}`).textContent  = icon;
+    document.getElementById(`temp-${side}`).textContent  = `${Math.round(c.temperature_2m)}°F`;
+    document.getElementById(`cond-${side}`).textContent  = condition;
+    document.getElementById(`feels-${side}`).textContent = `${Math.round(c.apparent_temperature)}°F`;
+    document.getElementById(`hum-${side}`).textContent   = `${c.relative_humidity_2m}%`;
+    document.getElementById(`wind-${side}`).textContent  = `${Math.round(c.wind_speed_10m)} mph`;
+    document.getElementById(`cloud-${side}`).textContent = `${c.cloud_cover}%`;
+    document.getElementById(`pop-${side}`).textContent = city.population ? city.population.toLocaleString() : "N/A";
+
+    if (aRes.ok) {
+      const aData = await aRes.json();
+      const aqi = aData.current.us_aqi;
+      const [label, cls] = aqiInfo(aqi);
+      document.getElementById(`aqi-num-${side}`).textContent = aqi;
+      const badge = document.getElementById(`aqi-badge-${side}`);
+      badge.textContent = label;
+      badge.className = `aqi-badge ${cls}`;
+    }
+
+    document.getElementById(`card-${side}`).classList.remove("loading");
+  }
+
+  function updateDiff() {
+    const l = cities.left.temp, r = cities.right.temp;
+    if (l == null || r == null) return;
+    const diff = l - r;
+    const abs = Math.abs(diff).toFixed(1);
+    const el = document.getElementById("diffValue");
+    if (abs < 0.5) {
+      el.textContent = "Nearly identical temperatures";
+      el.className = "diff-value";
+    } else if (diff > 0) {
+      el.textContent = `${cities.left.name} is ${abs}°F warmer than ${cities.right.name}`;
+      el.className = "diff-value warmer";
+    } else {
+      el.textContent = `${cities.right.name} is ${abs}°F warmer than ${cities.left.name}`;
+      el.className = "diff-value warmer";
+    }
+    document.getElementById("diffBar").style.display = "";
+  }
+
+  async function fetchAll() {
+    const btn = document.getElementById("refreshBtn");
+    btn.classList.add("spinning");
+    btn.disabled = true;
+    try {
+      await Promise.all([fetchCard("left"), fetchCard("right")]);
+      updateDiff();
+      document.getElementById("timestamp").textContent =
+        `Last updated: ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    } catch (err) { console.error(err); }
+    btn.classList.remove("spinning");
+    btn.disabled = false;
+  }
+
+  // Geocoding autocomplete
+  async function geocode(query) {
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=8&language=en`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return (data.results || []).filter(r => r.country_code === "US");
+  }
+
+  function setupSearch(side) {
+    const input = document.getElementById(`input-${side}`);
+    const sugg  = document.getElementById(`sugg-${side}`);
+    let timer;
+
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      const q = input.value.trim();
+      if (q.length < 2) { sugg.style.display = "none"; return; }
+      timer = setTimeout(async () => {
+        let results;
+        try { results = await geocode(q); } catch { return; }
+        if (!results.length) { sugg.style.display = "none"; return; }
+        sugg.innerHTML = results.map((r, i) =>
+          `<div class="suggestion-item" data-idx="${i}">
+            ${r.name}<span class="sugg-state">, ${r.admin1}</span>
+          </div>`
+        ).join("");
+        sugg.style.display = "block";
+        sugg.querySelectorAll(".suggestion-item").forEach((el, i) => {
+          el.addEventListener("mousedown", e => {
+            e.preventDefault();
+            pick(side, results[i]);
+          });
+        });
+      }, 250);
+    });
+
+    input.addEventListener("blur", () => {
+      setTimeout(() => { sugg.style.display = "none"; }, 150);
+    });
+  }
+
+  async function pick(side, result) {
+    cities[side] = {
+      name: result.name,
+      state: result.admin1,
+      lat: result.latitude,
+      lon: result.longitude,
+      timezone: null,
+      temp: null,
+      population: result.population || null,
+    };
+    document.getElementById(`input-${side}`).value = `${result.name}, ${result.admin1}`;
+    document.getElementById(`sugg-${side}`).style.display = "none";
+    try {
+      await fetchCard(side);
+      updateDiff();
+      document.getElementById("timestamp").textContent =
+        `Last updated: ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    } catch (err) { console.error(err); }
+  }
+
+  setupSearch("left");
+  setupSearch("right");
+  fetchAll();
+</script>
+</body>
+</html>
