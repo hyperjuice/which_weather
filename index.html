@@ -131,6 +131,62 @@
     .suggestion-item + .suggestion-item { border-top: 1px solid rgba(255, 255, 255, 0.05); }
     .suggestion-item .sugg-state { color: #475569; font-size: 0.8rem; }
 
+    /* Capital dropdown */
+    .select-wrap {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid #475569;
+      pointer-events: none;
+    }
+    .capital-select {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.6rem;
+      padding: 0.55rem 2rem 0.55rem 0.75rem;
+      color: #e2e8f0;
+      font-size: 0.875rem;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .capital-select:focus { border-color: rgba(96, 165, 250, 0.5); }
+    .capital-select option { background: #1e2a3a; color: #e2e8f0; }
+
+    /* Section divider */
+    .section-divider {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 2.5rem 0 1.5rem;
+      color: #64748b;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .section-divider::before, .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
     /* Weather display */
     .local-time {
       font-size: 0.82rem;
@@ -314,6 +370,52 @@
   <div class="diff-value" id="diffValue">—</div>
 </div>
 
+<!-- World Capitals Section -->
+<div class="section-divider">World Capitals</div>
+
+<div class="comparison">
+  <div class="city-card loading" id="card-cap-left">
+    <div class="select-wrap">
+      <select class="capital-select" id="select-cap-left"></select>
+    </div>
+    <div class="local-time" id="time-cap-left">&nbsp;</div>
+    <div class="weather-icon" id="icon-cap-left">—</div>
+    <div class="temp-main" id="temp-cap-left">&nbsp;</div>
+    <div class="condition" id="cond-cap-left">&nbsp;</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-cap-left">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-cap-left">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-cap-left">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-cap-left">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Country</div><div class="stat-value" id="pop-cap-left">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-cap-left">&nbsp;</div><div class="aqi-badge" id="aqi-badge-cap-left"></div></div></div>
+    </div>
+  </div>
+
+  <div class="city-card loading" id="card-cap-right">
+    <div class="select-wrap">
+      <select class="capital-select" id="select-cap-right"></select>
+    </div>
+    <div class="local-time" id="time-cap-right">&nbsp;</div>
+    <div class="weather-icon" id="icon-cap-right">—</div>
+    <div class="temp-main" id="temp-cap-right">&nbsp;</div>
+    <div class="condition" id="cond-cap-right">&nbsp;</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-cap-right">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-cap-right">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-cap-right">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-cap-right">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Country</div><div class="stat-value" id="pop-cap-right">&nbsp;</div></div>
+      <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-cap-right">&nbsp;</div><div class="aqi-badge" id="aqi-badge-cap-right"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="diff-bar" id="diffBar-cap" style="display:none">
+  <div class="diff-label">Temperature difference</div>
+  <div class="diff-value" id="diffValue-cap">—</div>
+</div>
+
 <div class="timestamp" id="timestamp"></div>
 
 <script>
@@ -361,6 +463,11 @@
     for (const [side, city] of Object.entries(cities)) {
       if (city.timezone) {
         document.getElementById(`time-${side}`).textContent = localTime(city.timezone);
+      }
+    }
+    for (const [side, cap] of Object.entries(capitals)) {
+      if (cap.timezone) {
+        document.getElementById(`time-cap-${side}`).textContent = localTime(cap.timezone);
       }
     }
   }, 1000);
@@ -432,8 +539,12 @@
     btn.classList.add("spinning");
     btn.disabled = true;
     try {
-      await Promise.all([fetchCard("left"), fetchCard("right")]);
+      await Promise.all([
+        fetchCard("left"), fetchCard("right"),
+        fetchCapCard("left"), fetchCapCard("right"),
+      ]);
       updateDiff();
+      updateCapDiff();
       document.getElementById("timestamp").textContent =
         `Last updated: ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
     } catch (err) { console.error(err); }
@@ -502,8 +613,304 @@
     } catch (err) { console.error(err); }
   }
 
+  // ── World Capitals ──────────────────────────────────────────────────────────
+
+  const CAPITALS = [
+    { country: "Afghanistan",                  capital: "Kabul",                    lat:  34.5155, lon:  69.1952 },
+    { country: "Albania",                       capital: "Tirana",                   lat:  41.3317, lon:  19.8319 },
+    { country: "Algeria",                       capital: "Algiers",                  lat:  36.7372, lon:   3.0865 },
+    { country: "Andorra",                       capital: "Andorra la Vella",         lat:  42.5075, lon:   1.5218 },
+    { country: "Angola",                        capital: "Luanda",                   lat:  -8.8368, lon:  13.2344 },
+    { country: "Antigua and Barbuda",           capital: "St. John's",               lat:  17.1175, lon: -61.8456 },
+    { country: "Argentina",                     capital: "Buenos Aires",              lat: -34.6037, lon: -58.3816 },
+    { country: "Armenia",                       capital: "Yerevan",                  lat:  40.1792, lon:  44.4991 },
+    { country: "Australia",                     capital: "Canberra",                 lat: -35.2835, lon: 149.1281 },
+    { country: "Austria",                       capital: "Vienna",                   lat:  48.2085, lon:  16.3721 },
+    { country: "Azerbaijan",                    capital: "Baku",                     lat:  40.3953, lon:  49.8822 },
+    { country: "Bahamas",                       capital: "Nassau",                   lat:  25.0480, lon: -77.3561 },
+    { country: "Bahrain",                       capital: "Manama",                   lat:  26.2154, lon:  50.5832 },
+    { country: "Bangladesh",                    capital: "Dhaka",                    lat:  23.7231, lon:  90.4086 },
+    { country: "Barbados",                      capital: "Bridgetown",               lat:  13.0935, lon: -59.6105 },
+    { country: "Belarus",                       capital: "Minsk",                    lat:  53.9045, lon:  27.5615 },
+    { country: "Belgium",                       capital: "Brussels",                 lat:  50.8503, lon:   4.3517 },
+    { country: "Belize",                        capital: "Belmopan",                 lat:  17.2510, lon: -88.7590 },
+    { country: "Benin",                         capital: "Porto-Novo",               lat:   6.3656, lon:   2.4183 },
+    { country: "Bhutan",                        capital: "Thimphu",                  lat:  27.4661, lon:  89.6419 },
+    { country: "Bolivia",                       capital: "Sucre",                    lat: -19.0421, lon: -65.2559 },
+    { country: "Bosnia and Herzegovina",        capital: "Sarajevo",                 lat:  43.8519, lon:  18.3866 },
+    { country: "Botswana",                      capital: "Gaborone",                 lat: -24.6581, lon:  25.9122 },
+    { country: "Brazil",                        capital: "Brasília",                 lat: -15.7797, lon: -47.9297 },
+    { country: "Brunei",                        capital: "Bandar Seri Begawan",      lat:   4.9402, lon: 114.9480 },
+    { country: "Bulgaria",                      capital: "Sofia",                    lat:  42.6977, lon:  23.3219 },
+    { country: "Burkina Faso",                  capital: "Ouagadougou",              lat:  12.3647, lon:  -1.5337 },
+    { country: "Burundi",                       capital: "Gitega",                   lat:  -3.4271, lon:  29.9306 },
+    { country: "Cabo Verde",                    capital: "Praia",                    lat:  14.9315, lon: -23.5087 },
+    { country: "Cambodia",                      capital: "Phnom Penh",               lat:  11.5625, lon: 104.9160 },
+    { country: "Cameroon",                      capital: "Yaoundé",                  lat:   3.8480, lon:  11.5021 },
+    { country: "Canada",                        capital: "Ottawa",                   lat:  45.4215, lon: -75.6972 },
+    { country: "Central African Republic",      capital: "Bangui",                   lat:   4.3612, lon:  18.5550 },
+    { country: "Chad",                          capital: "N'Djamena",                lat:  12.1048, lon:  15.0440 },
+    { country: "Chile",                         capital: "Santiago",                 lat: -33.4569, lon: -70.6483 },
+    { country: "China",                         capital: "Beijing",                  lat:  39.9042, lon: 116.4074 },
+    { country: "Colombia",                      capital: "Bogotá",                   lat:   4.7110, lon: -74.0721 },
+    { country: "Comoros",                       capital: "Moroni",                   lat: -11.7022, lon:  43.2551 },
+    { country: "Congo (Republic)",              capital: "Brazzaville",              lat:  -4.2694, lon:  15.2712 },
+    { country: "Congo (DR)",                    capital: "Kinshasa",                 lat:  -4.3317, lon:  15.3145 },
+    { country: "Costa Rica",                    capital: "San José",                 lat:   9.9281, lon: -84.0907 },
+    { country: "Croatia",                       capital: "Zagreb",                   lat:  45.8150, lon:  15.9819 },
+    { country: "Cuba",                          capital: "Havana",                   lat:  23.1136, lon: -82.3666 },
+    { country: "Cyprus",                        capital: "Nicosia",                  lat:  35.1667, lon:  33.3667 },
+    { country: "Czech Republic",                capital: "Prague",                   lat:  50.0755, lon:  14.4378 },
+    { country: "Denmark",                       capital: "Copenhagen",               lat:  55.6761, lon:  12.5683 },
+    { country: "Djibouti",                      capital: "Djibouti City",            lat:  11.5720, lon:  43.1450 },
+    { country: "Dominica",                      capital: "Roseau",                   lat:  15.3017, lon: -61.3882 },
+    { country: "Dominican Republic",            capital: "Santo Domingo",            lat:  18.4861, lon: -69.9312 },
+    { country: "Ecuador",                       capital: "Quito",                    lat:  -0.2299, lon: -78.5249 },
+    { country: "Egypt",                         capital: "Cairo",                    lat:  30.0444, lon:  31.2357 },
+    { country: "El Salvador",                   capital: "San Salvador",             lat:  13.6929, lon: -89.2182 },
+    { country: "Equatorial Guinea",             capital: "Malabo",                   lat:   3.7523, lon:   8.7741 },
+    { country: "Eritrea",                       capital: "Asmara",                   lat:  15.3229, lon:  38.9251 },
+    { country: "Estonia",                       capital: "Tallinn",                  lat:  59.4370, lon:  24.7536 },
+    { country: "Eswatini",                      capital: "Mbabane",                  lat: -26.3186, lon:  31.1410 },
+    { country: "Ethiopia",                      capital: "Addis Ababa",              lat:   9.0192, lon:  38.7525 },
+    { country: "Fiji",                          capital: "Suva",                     lat: -18.1416, lon: 178.4419 },
+    { country: "Finland",                       capital: "Helsinki",                 lat:  60.1699, lon:  24.9384 },
+    { country: "France",                        capital: "Paris",                    lat:  48.8566, lon:   2.3522 },
+    { country: "Gabon",                         capital: "Libreville",               lat:   0.4162, lon:   9.4673 },
+    { country: "Gambia",                        capital: "Banjul",                   lat:  13.4531, lon: -16.5775 },
+    { country: "Georgia",                       capital: "Tbilisi",                  lat:  41.6941, lon:  44.8337 },
+    { country: "Germany",                       capital: "Berlin",                   lat:  52.5200, lon:  13.4050 },
+    { country: "Ghana",                         capital: "Accra",                    lat:   5.5600, lon:  -0.2057 },
+    { country: "Greece",                        capital: "Athens",                   lat:  37.9838, lon:  23.7275 },
+    { country: "Grenada",                       capital: "St. George's",             lat:  12.0564, lon: -61.7485 },
+    { country: "Guatemala",                     capital: "Guatemala City",           lat:  14.6349, lon: -90.5069 },
+    { country: "Guinea",                        capital: "Conakry",                  lat:   9.5370, lon: -13.6773 },
+    { country: "Guinea-Bissau",                 capital: "Bissau",                   lat:  11.8636, lon: -15.5977 },
+    { country: "Guyana",                        capital: "Georgetown",               lat:   6.8013, lon: -58.1551 },
+    { country: "Haiti",                         capital: "Port-au-Prince",           lat:  18.5944, lon: -72.3074 },
+    { country: "Honduras",                      capital: "Tegucigalpa",              lat:  14.0818, lon: -87.2068 },
+    { country: "Hungary",                       capital: "Budapest",                 lat:  47.4979, lon:  19.0402 },
+    { country: "Iceland",                       capital: "Reykjavík",                lat:  64.1265, lon: -21.8174 },
+    { country: "India",                         capital: "New Delhi",                lat:  28.6139, lon:  77.2090 },
+    { country: "Indonesia",                     capital: "Jakarta",                  lat:  -6.2088, lon: 106.8456 },
+    { country: "Iran",                          capital: "Tehran",                   lat:  35.6892, lon:  51.3890 },
+    { country: "Iraq",                          capital: "Baghdad",                  lat:  33.3152, lon:  44.3661 },
+    { country: "Ireland",                       capital: "Dublin",                   lat:  53.3498, lon:  -6.2603 },
+    { country: "Israel",                        capital: "Jerusalem",                lat:  31.7683, lon:  35.2137 },
+    { country: "Italy",                         capital: "Rome",                     lat:  41.9028, lon:  12.4964 },
+    { country: "Jamaica",                       capital: "Kingston",                 lat:  17.9714, lon: -76.7920 },
+    { country: "Japan",                         capital: "Tokyo",                    lat:  35.6762, lon: 139.6503 },
+    { country: "Jordan",                        capital: "Amman",                    lat:  31.9454, lon:  35.9284 },
+    { country: "Kazakhstan",                    capital: "Astana",                   lat:  51.1811, lon:  71.4460 },
+    { country: "Kenya",                         capital: "Nairobi",                  lat:  -1.2921, lon:  36.8219 },
+    { country: "Kiribati",                      capital: "South Tarawa",             lat:   1.3382, lon: 172.9790 },
+    { country: "Kosovo",                        capital: "Pristina",                 lat:  42.6629, lon:  21.1655 },
+    { country: "Kuwait",                        capital: "Kuwait City",              lat:  29.3759, lon:  47.9774 },
+    { country: "Kyrgyzstan",                    capital: "Bishkek",                  lat:  42.8746, lon:  74.5698 },
+    { country: "Laos",                          capital: "Vientiane",                lat:  17.9757, lon: 102.6331 },
+    { country: "Latvia",                        capital: "Riga",                     lat:  56.9460, lon:  24.1059 },
+    { country: "Lebanon",                       capital: "Beirut",                   lat:  33.8938, lon:  35.5018 },
+    { country: "Lesotho",                       capital: "Maseru",                   lat: -29.3141, lon:  27.4833 },
+    { country: "Liberia",                       capital: "Monrovia",                 lat:   6.2907, lon: -10.7600 },
+    { country: "Libya",                         capital: "Tripoli",                  lat:  32.8872, lon:  13.1913 },
+    { country: "Liechtenstein",                 capital: "Vaduz",                    lat:  47.1416, lon:   9.5215 },
+    { country: "Lithuania",                     capital: "Vilnius",                  lat:  54.6872, lon:  25.2797 },
+    { country: "Luxembourg",                    capital: "Luxembourg City",          lat:  49.6116, lon:   6.1319 },
+    { country: "Madagascar",                    capital: "Antananarivo",             lat: -18.9137, lon:  47.5361 },
+    { country: "Malawi",                        capital: "Lilongwe",                 lat: -13.9626, lon:  33.7741 },
+    { country: "Malaysia",                      capital: "Kuala Lumpur",             lat:   3.1390, lon: 101.6869 },
+    { country: "Maldives",                      capital: "Malé",                     lat:   4.1755, lon:  73.5093 },
+    { country: "Mali",                          capital: "Bamako",                   lat:  12.6392, lon:  -8.0029 },
+    { country: "Malta",                         capital: "Valletta",                 lat:  35.8997, lon:  14.5147 },
+    { country: "Marshall Islands",              capital: "Majuro",                   lat:   7.0897, lon: 171.3801 },
+    { country: "Mauritania",                    capital: "Nouakchott",               lat:  18.0735, lon: -15.9582 },
+    { country: "Mauritius",                     capital: "Port Louis",               lat: -20.1609, lon:  57.4991 },
+    { country: "Mexico",                        capital: "Mexico City",              lat:  19.4326, lon: -99.1332 },
+    { country: "Micronesia",                    capital: "Palikir",                  lat:   6.9147, lon: 158.1611 },
+    { country: "Moldova",                       capital: "Chișinău",                 lat:  47.0105, lon:  28.8638 },
+    { country: "Monaco",                        capital: "Monaco",                   lat:  43.7333, lon:   7.4167 },
+    { country: "Mongolia",                      capital: "Ulaanbaatar",              lat:  47.8864, lon: 106.9057 },
+    { country: "Montenegro",                    capital: "Podgorica",                lat:  42.4411, lon:  19.2636 },
+    { country: "Morocco",                       capital: "Rabat",                    lat:  34.0209, lon:  -6.8416 },
+    { country: "Mozambique",                    capital: "Maputo",                   lat: -25.9692, lon:  32.5732 },
+    { country: "Myanmar",                       capital: "Naypyidaw",                lat:  19.7633, lon:  96.0785 },
+    { country: "Namibia",                       capital: "Windhoek",                 lat: -22.5597, lon:  17.0832 },
+    { country: "Nauru",                         capital: "Yaren",                    lat:  -0.5477, lon: 166.9209 },
+    { country: "Nepal",                         capital: "Kathmandu",                lat:  27.7172, lon:  85.3240 },
+    { country: "Netherlands",                   capital: "Amsterdam",                lat:  52.3676, lon:   4.9041 },
+    { country: "New Zealand",                   capital: "Wellington",               lat: -41.2866, lon: 174.7756 },
+    { country: "Nicaragua",                     capital: "Managua",                  lat:  12.1149, lon: -86.2362 },
+    { country: "Niger",                         capital: "Niamey",                   lat:  13.5137, lon:   2.1098 },
+    { country: "Nigeria",                       capital: "Abuja",                    lat:   9.0765, lon:   7.3986 },
+    { country: "North Korea",                   capital: "Pyongyang",                lat:  39.0392, lon: 125.7625 },
+    { country: "North Macedonia",               capital: "Skopje",                   lat:  42.0049, lon:  21.4765 },
+    { country: "Norway",                        capital: "Oslo",                     lat:  59.9139, lon:  10.7522 },
+    { country: "Oman",                          capital: "Muscat",                   lat:  23.5880, lon:  58.3829 },
+    { country: "Pakistan",                      capital: "Islamabad",                lat:  33.6844, lon:  73.0479 },
+    { country: "Palau",                         capital: "Ngerulmud",                lat:   7.5006, lon: 134.6242 },
+    { country: "Palestine",                     capital: "Ramallah",                 lat:  31.9038, lon:  35.2034 },
+    { country: "Panama",                        capital: "Panama City",              lat:   8.9936, lon: -79.5197 },
+    { country: "Papua New Guinea",              capital: "Port Moresby",             lat:  -9.4431, lon: 147.1797 },
+    { country: "Paraguay",                      capital: "Asunción",                 lat: -25.2637, lon: -57.5759 },
+    { country: "Peru",                          capital: "Lima",                     lat: -12.0464, lon: -77.0428 },
+    { country: "Philippines",                   capital: "Manila",                   lat:  14.5995, lon: 120.9842 },
+    { country: "Poland",                        capital: "Warsaw",                   lat:  52.2297, lon:  21.0122 },
+    { country: "Portugal",                      capital: "Lisbon",                   lat:  38.7223, lon:  -9.1393 },
+    { country: "Qatar",                         capital: "Doha",                     lat:  25.2854, lon:  51.5310 },
+    { country: "Romania",                       capital: "Bucharest",                lat:  44.4268, lon:  26.1025 },
+    { country: "Russia",                        capital: "Moscow",                   lat:  55.7558, lon:  37.6176 },
+    { country: "Rwanda",                        capital: "Kigali",                   lat:  -1.9706, lon:  30.1044 },
+    { country: "Saint Kitts and Nevis",         capital: "Basseterre",               lat:  17.2948, lon: -62.7261 },
+    { country: "Saint Lucia",                   capital: "Castries",                 lat:  14.0101, lon: -60.9875 },
+    { country: "Saint Vincent and Grenadines",  capital: "Kingstown",                lat:  13.1600, lon: -61.2248 },
+    { country: "Samoa",                         capital: "Apia",                     lat: -13.8333, lon:-171.7667 },
+    { country: "San Marino",                    capital: "San Marino City",          lat:  43.9424, lon:  12.4578 },
+    { country: "São Tomé and Príncipe",         capital: "São Tomé",                 lat:   0.3365, lon:   6.7273 },
+    { country: "Saudi Arabia",                  capital: "Riyadh",                   lat:  24.6877, lon:  46.7219 },
+    { country: "Senegal",                       capital: "Dakar",                    lat:  14.6928, lon: -17.4467 },
+    { country: "Serbia",                        capital: "Belgrade",                 lat:  44.8125, lon:  20.4612 },
+    { country: "Seychelles",                    capital: "Victoria",                 lat:  -4.6191, lon:  55.4513 },
+    { country: "Sierra Leone",                  capital: "Freetown",                 lat:   8.4697, lon: -13.2317 },
+    { country: "Singapore",                     capital: "Singapore",                lat:   1.3521, lon: 103.8198 },
+    { country: "Slovakia",                      capital: "Bratislava",               lat:  48.1486, lon:  17.1077 },
+    { country: "Slovenia",                      capital: "Ljubljana",                lat:  46.0569, lon:  14.5058 },
+    { country: "Solomon Islands",               capital: "Honiara",                  lat:  -9.4456, lon: 160.0056 },
+    { country: "Somalia",                       capital: "Mogadishu",                lat:   2.0469, lon:  45.3182 },
+    { country: "South Africa",                  capital: "Pretoria",                 lat: -25.7479, lon:  28.2293 },
+    { country: "South Korea",                   capital: "Seoul",                    lat:  37.5665, lon: 126.9780 },
+    { country: "South Sudan",                   capital: "Juba",                     lat:   4.8594, lon:  31.5713 },
+    { country: "Spain",                         capital: "Madrid",                   lat:  40.4168, lon:  -3.7038 },
+    { country: "Sri Lanka",                     capital: "Sri Jayawardenepura Kotte",lat:   6.9054, lon:  79.8878 },
+    { country: "Sudan",                         capital: "Khartoum",                 lat:  15.5007, lon:  32.5599 },
+    { country: "Suriname",                      capital: "Paramaribo",               lat:   5.8520, lon: -55.2038 },
+    { country: "Sweden",                        capital: "Stockholm",                lat:  59.3293, lon:  18.0686 },
+    { country: "Switzerland",                   capital: "Bern",                     lat:  46.9480, lon:   7.4474 },
+    { country: "Syria",                         capital: "Damascus",                 lat:  33.5138, lon:  36.2765 },
+    { country: "Taiwan",                        capital: "Taipei",                   lat:  25.0330, lon: 121.5654 },
+    { country: "Tajikistan",                    capital: "Dushanbe",                 lat:  38.5598, lon:  68.7870 },
+    { country: "Tanzania",                      capital: "Dodoma",                   lat:  -6.1722, lon:  35.7395 },
+    { country: "Thailand",                      capital: "Bangkok",                  lat:  13.7563, lon: 100.5018 },
+    { country: "Timor-Leste",                   capital: "Dili",                     lat:  -8.5569, lon: 125.5788 },
+    { country: "Togo",                          capital: "Lomé",                     lat:   6.1375, lon:   1.2123 },
+    { country: "Tonga",                         capital: "Nuku'alofa",               lat: -21.1393, lon:-175.2040 },
+    { country: "Trinidad and Tobago",           capital: "Port of Spain",            lat:  10.6549, lon: -61.5019 },
+    { country: "Tunisia",                       capital: "Tunis",                    lat:  36.8065, lon:  10.1815 },
+    { country: "Turkey",                        capital: "Ankara",                   lat:  39.9334, lon:  32.8597 },
+    { country: "Turkmenistan",                  capital: "Ashgabat",                 lat:  37.9601, lon:  58.3261 },
+    { country: "Tuvalu",                        capital: "Funafuti",                 lat:  -8.5243, lon: 179.1942 },
+    { country: "Uganda",                        capital: "Kampala",                  lat:   0.3476, lon:  32.5825 },
+    { country: "Ukraine",                       capital: "Kyiv",                     lat:  50.4501, lon:  30.5234 },
+    { country: "United Arab Emirates",          capital: "Abu Dhabi",                lat:  24.4539, lon:  54.3773 },
+    { country: "United Kingdom",                capital: "London",                   lat:  51.5074, lon:  -0.1278 },
+    { country: "United States",                 capital: "Washington D.C.",          lat:  38.9072, lon: -77.0369 },
+    { country: "Uruguay",                       capital: "Montevideo",               lat: -34.9011, lon: -56.1645 },
+    { country: "Uzbekistan",                    capital: "Tashkent",                 lat:  41.2995, lon:  69.2401 },
+    { country: "Vanuatu",                       capital: "Port Vila",                lat: -17.7333, lon: 168.3167 },
+    { country: "Vatican City",                  capital: "Vatican City",             lat:  41.9029, lon:  12.4534 },
+    { country: "Venezuela",                     capital: "Caracas",                  lat:  10.4806, lon: -66.9036 },
+    { country: "Vietnam",                       capital: "Hanoi",                    lat:  21.0285, lon: 105.8542 },
+    { country: "Yemen",                         capital: "Sana'a",                   lat:  15.3694, lon:  44.1910 },
+    { country: "Zambia",                        capital: "Lusaka",                   lat: -15.4166, lon:  28.2833 },
+    { country: "Zimbabwe",                      capital: "Harare",                   lat: -17.8292, lon:  31.0522 },
+  ];
+
+  const DEFAULT_LEFT_CAP  = "United States";
+  const DEFAULT_RIGHT_CAP = "Australia";
+
+  function capitalByCountry(country) {
+    return CAPITALS.find(c => c.country === country);
+  }
+
+  const capitals = {
+    left:  { ...capitalByCountry(DEFAULT_LEFT_CAP),  timezone: null, temp: null },
+    right: { ...capitalByCountry(DEFAULT_RIGHT_CAP), timezone: null, temp: null },
+  };
+
+  function buildCapitalSelect(side) {
+    const sel = document.getElementById(`select-cap-${side}`);
+    const defaultCountry = side === "left" ? DEFAULT_LEFT_CAP : DEFAULT_RIGHT_CAP;
+    sel.innerHTML = CAPITALS.map(c =>
+      `<option value="${c.country}"${c.country === defaultCountry ? " selected" : ""}>${c.country} — ${c.capital}</option>`
+    ).join("");
+    sel.addEventListener("change", async () => {
+      const entry = capitalByCountry(sel.value);
+      if (!entry) return;
+      capitals[side] = { ...entry, timezone: null, temp: null };
+      try {
+        await fetchCapCard(side);
+        updateCapDiff();
+        document.getElementById("timestamp").textContent =
+          `Last updated: ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+      } catch (err) { console.error(err); }
+    });
+  }
+
+  async function fetchCapCard(side) {
+    const cap = capitals[side];
+    document.getElementById(`card-cap-${side}`).classList.add("loading");
+    document.getElementById(`icon-cap-${side}`).textContent = "—";
+
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${cap.lat}&longitude=${cap.lon}` +
+      `&current=temperature_2m,apparent_temperature,relative_humidity_2m,` +
+      `wind_speed_10m,weathercode,cloud_cover,is_day` +
+      `&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto`;
+    const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${cap.lat}&longitude=${cap.lon}&current=us_aqi&timezone=auto`;
+
+    const [wRes, aRes] = await Promise.all([fetch(weatherUrl), fetch(aqiUrl)]);
+    if (!wRes.ok) throw new Error(`HTTP ${wRes.status}`);
+    const data = await wRes.json();
+    const c = data.current;
+    const [condition, icon] = wmoInfo(c.weathercode, c.is_day);
+
+    cap.timezone = data.timezone;
+    cap.temp = c.temperature_2m;
+
+    document.getElementById(`time-cap-${side}`).textContent  = localTime(data.timezone);
+    document.getElementById(`icon-cap-${side}`).textContent  = icon;
+    document.getElementById(`temp-cap-${side}`).textContent  = `${Math.round(c.temperature_2m)}°F`;
+    document.getElementById(`cond-cap-${side}`).textContent  = condition;
+    document.getElementById(`feels-cap-${side}`).textContent = `${Math.round(c.apparent_temperature)}°F`;
+    document.getElementById(`hum-cap-${side}`).textContent   = `${c.relative_humidity_2m}%`;
+    document.getElementById(`wind-cap-${side}`).textContent  = `${Math.round(c.wind_speed_10m)} mph`;
+    document.getElementById(`cloud-cap-${side}`).textContent = `${c.cloud_cover}%`;
+    document.getElementById(`pop-cap-${side}`).textContent   = cap.country;
+
+    if (aRes.ok) {
+      const aData = await aRes.json();
+      const aqi = aData.current.us_aqi;
+      const [label, cls] = aqiInfo(aqi);
+      document.getElementById(`aqi-num-cap-${side}`).textContent = aqi;
+      const badge = document.getElementById(`aqi-badge-cap-${side}`);
+      badge.textContent = label;
+      badge.className = `aqi-badge ${cls}`;
+    }
+
+    document.getElementById(`card-cap-${side}`).classList.remove("loading");
+  }
+
+  function updateCapDiff() {
+    const l = capitals.left.temp, r = capitals.right.temp;
+    if (l == null || r == null) return;
+    const diff = l - r;
+    const abs = Math.abs(diff).toFixed(1);
+    const el = document.getElementById("diffValue-cap");
+    if (abs < 0.5) {
+      el.textContent = "Nearly identical temperatures";
+      el.className = "diff-value";
+    } else if (diff > 0) {
+      el.textContent = `${capitals.left.capital} is ${abs}°F warmer than ${capitals.right.capital}`;
+      el.className = "diff-value warmer";
+    } else {
+      el.textContent = `${capitals.right.capital} is ${abs}°F warmer than ${capitals.left.capital}`;
+      el.className = "diff-value warmer";
+    }
+    document.getElementById("diffBar-cap").style.display = "";
+  }
+
   setupSearch("left");
   setupSearch("right");
+  buildCapitalSelect("left");
+  buildCapitalSelect("right");
   fetchAll();
 </script>
 </body>
