@@ -58,20 +58,16 @@
     .comparison {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
+      gap: 0.5rem;
       width: 100%;
       max-width: 800px;
-    }
-
-    @media (max-width: 540px) {
-      .comparison { grid-template-columns: 1fr; }
     }
 
     .city-card {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 1.25rem;
-      padding: 1.75rem;
+      border-radius: 0.75rem;
+      padding: 0.7rem;
       backdrop-filter: blur(12px);
       transition: transform 0.2s;
     }
@@ -80,7 +76,7 @@
     /* Search */
     .search-wrap {
       position: relative;
-      margin-bottom: 1.25rem;
+      margin-bottom: 0.6rem;
     }
 
     .search-icon {
@@ -96,10 +92,10 @@
       width: 100%;
       background: rgba(255, 255, 255, 0.07);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.6rem;
-      padding: 0.55rem 0.75rem 0.55rem 2rem;
+      border-radius: 0.4rem;
+      padding: 0.35rem 0.5rem 0.35rem 1.6rem;
       color: #e2e8f0;
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       outline: none;
       transition: border-color 0.2s;
     }
@@ -134,7 +130,7 @@
     /* Capital dropdown */
     .select-wrap {
       position: relative;
-      margin-bottom: 1.25rem;
+      margin-bottom: 0.6rem;
     }
     .select-wrap::after {
       content: '';
@@ -153,10 +149,10 @@
       width: 100%;
       background: rgba(255, 255, 255, 0.07);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.6rem;
-      padding: 0.55rem 2rem 0.55rem 0.75rem;
+      border-radius: 0.4rem;
+      padding: 0.35rem 1.5rem 0.35rem 0.5rem;
       color: #e2e8f0;
-      font-size: 0.875rem;
+      font-size: 0.75rem;
       outline: none;
       cursor: pointer;
       transition: border-color 0.2s;
@@ -166,77 +162,104 @@
     .capital-select:focus { border-color: rgba(96, 165, 250, 0.5); }
     .capital-select option { background: #1e2a3a; color: #e2e8f0; }
 
-    /* Section divider */
-    .section-divider {
-      width: 100%;
-      max-width: 800px;
+    .sections-wrapper {
       display: flex;
+      width: 100%;
+      max-width: 1600px;
+      gap: 0;
+    }
+
+    .section-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 1rem;
-      margin: 2.5rem 0 1.5rem;
-      color: #64748b;
+      padding: 0 0.75rem;
+      min-width: 0;
+    }
+
+    .section-panel .comparison {
+      max-width: none;
+      width: 100%;
+    }
+
+    .section-panel .diff-bar {
+      max-width: none;
+      width: 100%;
+    }
+
+    .panel-label {
       font-size: 0.82rem;
+      color: #64748b;
       font-weight: 500;
       letter-spacing: 0.05em;
       text-transform: uppercase;
+      margin-bottom: 1.5rem;
     }
-    .section-divider::before, .section-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
+
+    .vertical-divider {
+      flex-shrink: 0;
+      width: 1px;
       background: rgba(255, 255, 255, 0.08);
+      align-self: stretch;
+    }
+
+    @media (max-width: 600px) {
+      .sections-wrapper { flex-direction: column; align-items: center; }
+      .section-panel { width: 100%; max-width: 800px; padding: 0; }
+      .vertical-divider { width: 100%; height: 1px; align-self: auto; margin: 1.5rem 0; }
     }
 
     /* Weather display */
     .local-time {
-      font-size: 0.82rem;
+      font-size: 0.7rem;
       color: #60a5fa;
       font-variant-numeric: tabular-nums;
-      margin-bottom: 1rem;
-      min-height: 1rem;
+      margin-bottom: 0.3rem;
+      min-height: 0.9rem;
     }
 
     .weather-icon {
-      font-size: 3.5rem;
+      font-size: 1.75rem;
       line-height: 1;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.2rem;
     }
 
     .temp-main {
-      font-size: 3rem;
+      font-size: 1.6rem;
       font-weight: 700;
-      letter-spacing: -1px;
+      letter-spacing: -0.5px;
       line-height: 1;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.1rem;
     }
 
     .condition {
-      font-size: 0.9rem;
+      font-size: 0.75rem;
       color: #94a3b8;
-      margin-bottom: 1.5rem;
-      min-height: 1.25rem;
+      margin-bottom: 0.6rem;
+      min-height: 1rem;
     }
 
     .stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
+      gap: 0.3rem;
     }
 
     .stat {
       background: rgba(255, 255, 255, 0.04);
-      border-radius: 0.75rem;
-      padding: 0.75rem;
+      border-radius: 0.4rem;
+      padding: 0.35rem 0.45rem;
     }
     .stat-label {
-      font-size: 0.7rem;
+      font-size: 0.6rem;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       color: #475569;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.1rem;
     }
     .stat-value {
-      font-size: 1rem;
+      font-size: 0.8rem;
       font-weight: 600;
       color: #e2e8f0;
     }
@@ -319,101 +342,108 @@
   Refresh
 </button>
 
-<div class="comparison">
-  <div class="city-card loading" id="card-left">
-    <div class="search-wrap">
-      <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input type="text" class="city-input" id="input-left" placeholder="Search U.S. city…" value="Skokie, Illinois" autocomplete="off" spellcheck="false" />
-      <div class="suggestions" id="sugg-left"></div>
+<div class="sections-wrapper">
+  <div class="section-panel">
+    <div class="panel-label">U.S. Cities</div>
+    <div class="comparison">
+      <div class="city-card loading" id="card-left">
+        <div class="search-wrap">
+          <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" class="city-input" id="input-left" placeholder="Search U.S. city…" value="Skokie, Illinois" autocomplete="off" spellcheck="false" />
+          <div class="suggestions" id="sugg-left"></div>
+        </div>
+        <div class="local-time" id="time-left">&nbsp;</div>
+        <div class="weather-icon" id="icon-left">—</div>
+        <div class="temp-main" id="temp-left">&nbsp;</div>
+        <div class="condition" id="cond-left">&nbsp;</div>
+        <div class="stats">
+          <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-left">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-left">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-left">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-left">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Population</div><div class="stat-value" id="pop-left">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-left">&nbsp;</div><div class="aqi-badge" id="aqi-badge-left"></div></div></div>
+        </div>
+      </div>
+
+      <div class="city-card loading" id="card-right">
+        <div class="search-wrap">
+          <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" class="city-input" id="input-right" placeholder="Search U.S. city…" value="Berkeley, California" autocomplete="off" spellcheck="false" />
+          <div class="suggestions" id="sugg-right"></div>
+        </div>
+        <div class="local-time" id="time-right">&nbsp;</div>
+        <div class="weather-icon" id="icon-right">—</div>
+        <div class="temp-main" id="temp-right">&nbsp;</div>
+        <div class="condition" id="cond-right">&nbsp;</div>
+        <div class="stats">
+          <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-right">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-right">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-right">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-right">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Population</div><div class="stat-value" id="pop-right">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-right">&nbsp;</div><div class="aqi-badge" id="aqi-badge-right"></div></div></div>
+        </div>
+      </div>
     </div>
-    <div class="local-time" id="time-left">&nbsp;</div>
-    <div class="weather-icon" id="icon-left">—</div>
-    <div class="temp-main" id="temp-left">&nbsp;</div>
-    <div class="condition" id="cond-left">&nbsp;</div>
-    <div class="stats">
-      <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-left">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-left">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-left">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-left">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Population</div><div class="stat-value" id="pop-left">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-left">&nbsp;</div><div class="aqi-badge" id="aqi-badge-left"></div></div></div>
+
+    <div class="diff-bar" id="diffBar" style="display:none">
+      <div class="diff-label">Temperature difference</div>
+      <div class="diff-value" id="diffValue">—</div>
     </div>
   </div>
 
-  <div class="city-card loading" id="card-right">
-    <div class="search-wrap">
-      <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input type="text" class="city-input" id="input-right" placeholder="Search U.S. city…" value="Berkeley, California" autocomplete="off" spellcheck="false" />
-      <div class="suggestions" id="sugg-right"></div>
+  <div class="vertical-divider"></div>
+
+  <div class="section-panel">
+    <div class="panel-label">World Capitals</div>
+    <div class="comparison">
+      <div class="city-card loading" id="card-cap-left">
+        <div class="select-wrap">
+          <select class="capital-select" id="select-cap-left"></select>
+        </div>
+        <div class="local-time" id="time-cap-left">&nbsp;</div>
+        <div class="weather-icon" id="icon-cap-left">—</div>
+        <div class="temp-main" id="temp-cap-left">&nbsp;</div>
+        <div class="condition" id="cond-cap-left">&nbsp;</div>
+        <div class="stats">
+          <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-cap-left">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-cap-left">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-cap-left">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-cap-left">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Country</div><div class="stat-value" id="pop-cap-left">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-cap-left">&nbsp;</div><div class="aqi-badge" id="aqi-badge-cap-left"></div></div></div>
+        </div>
+      </div>
+
+      <div class="city-card loading" id="card-cap-right">
+        <div class="select-wrap">
+          <select class="capital-select" id="select-cap-right"></select>
+        </div>
+        <div class="local-time" id="time-cap-right">&nbsp;</div>
+        <div class="weather-icon" id="icon-cap-right">—</div>
+        <div class="temp-main" id="temp-cap-right">&nbsp;</div>
+        <div class="condition" id="cond-cap-right">&nbsp;</div>
+        <div class="stats">
+          <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-cap-right">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-cap-right">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-cap-right">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-cap-right">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Country</div><div class="stat-value" id="pop-cap-right">&nbsp;</div></div>
+          <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-cap-right">&nbsp;</div><div class="aqi-badge" id="aqi-badge-cap-right"></div></div></div>
+        </div>
+      </div>
     </div>
-    <div class="local-time" id="time-right">&nbsp;</div>
-    <div class="weather-icon" id="icon-right">—</div>
-    <div class="temp-main" id="temp-right">&nbsp;</div>
-    <div class="condition" id="cond-right">&nbsp;</div>
-    <div class="stats">
-      <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-right">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-right">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-right">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-right">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Population</div><div class="stat-value" id="pop-right">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-right">&nbsp;</div><div class="aqi-badge" id="aqi-badge-right"></div></div></div>
+
+    <div class="diff-bar" id="diffBar-cap" style="display:none">
+      <div class="diff-label">Temperature difference</div>
+      <div class="diff-value" id="diffValue-cap">—</div>
     </div>
   </div>
-</div>
-
-<div class="diff-bar" id="diffBar" style="display:none">
-  <div class="diff-label">Temperature difference</div>
-  <div class="diff-value" id="diffValue">—</div>
-</div>
-
-<!-- World Capitals Section -->
-<div class="section-divider">World Capitals</div>
-
-<div class="comparison">
-  <div class="city-card loading" id="card-cap-left">
-    <div class="select-wrap">
-      <select class="capital-select" id="select-cap-left"></select>
-    </div>
-    <div class="local-time" id="time-cap-left">&nbsp;</div>
-    <div class="weather-icon" id="icon-cap-left">—</div>
-    <div class="temp-main" id="temp-cap-left">&nbsp;</div>
-    <div class="condition" id="cond-cap-left">&nbsp;</div>
-    <div class="stats">
-      <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-cap-left">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-cap-left">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-cap-left">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-cap-left">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Country</div><div class="stat-value" id="pop-cap-left">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-cap-left">&nbsp;</div><div class="aqi-badge" id="aqi-badge-cap-left"></div></div></div>
-    </div>
-  </div>
-
-  <div class="city-card loading" id="card-cap-right">
-    <div class="select-wrap">
-      <select class="capital-select" id="select-cap-right"></select>
-    </div>
-    <div class="local-time" id="time-cap-right">&nbsp;</div>
-    <div class="weather-icon" id="icon-cap-right">—</div>
-    <div class="temp-main" id="temp-cap-right">&nbsp;</div>
-    <div class="condition" id="cond-cap-right">&nbsp;</div>
-    <div class="stats">
-      <div class="stat"><div class="stat-label">Feels Like</div><div class="stat-value" id="feels-cap-right">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Humidity</div><div class="stat-value" id="hum-cap-right">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Wind</div><div class="stat-value" id="wind-cap-right">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Cloud Cover</div><div class="stat-value" id="cloud-cap-right">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Country</div><div class="stat-value" id="pop-cap-right">&nbsp;</div></div>
-      <div class="stat"><div class="stat-label">Air Quality</div><div class="aqi-row"><div class="stat-value" id="aqi-num-cap-right">&nbsp;</div><div class="aqi-badge" id="aqi-badge-cap-right"></div></div></div>
-    </div>
-  </div>
-</div>
-
-<div class="diff-bar" id="diffBar-cap" style="display:none">
-  <div class="diff-label">Temperature difference</div>
-  <div class="diff-value" id="diffValue-cap">—</div>
 </div>
 
 <div class="timestamp" id="timestamp"></div>
