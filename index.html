@@ -327,6 +327,83 @@
       color: #f87171;
       font-size: 0.875rem;
     }
+
+    /* Email subscription widget */
+    .subscribe-wrap {
+      width: 100%;
+      margin-top: 1rem;
+      background: rgba(96, 165, 250, 0.05);
+      border: 1px solid rgba(96, 165, 250, 0.18);
+      border-radius: 0.75rem;
+      padding: 0.9rem 1rem;
+    }
+
+    .subscribe-label {
+      font-size: 0.7rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.55rem;
+    }
+
+    .subscribe-row {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .sub-input {
+      flex: 1;
+      min-width: 150px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.4rem;
+      padding: 0.38rem 0.6rem;
+      color: #e2e8f0;
+      font-size: 0.78rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .sub-input::placeholder { color: #475569; }
+    .sub-input:focus { border-color: rgba(96, 165, 250, 0.5); }
+
+    .sub-select {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.4rem;
+      padding: 0.38rem 0.6rem;
+      color: #e2e8f0;
+      font-size: 0.78rem;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .sub-select:focus { border-color: rgba(96, 165, 250, 0.5); }
+    .sub-select option { background: #1e2a3a; color: #e2e8f0; }
+
+    .sub-btn {
+      background: rgba(96, 165, 250, 0.18);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      color: #60a5fa;
+      border-radius: 0.4rem;
+      padding: 0.38rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .sub-btn:hover:not(:disabled) { background: rgba(96, 165, 250, 0.28); }
+    .sub-btn:disabled { opacity: 0.5; cursor: default; }
+
+    .sub-msg {
+      font-size: 0.73rem;
+      margin-top: 0.45rem;
+      min-height: 1rem;
+    }
+    .sub-msg.success { color: #22c55e; }
+    .sub-msg.error   { color: #f87171; }
   </style>
 </head>
 <body>
@@ -394,6 +471,19 @@
     <div class="diff-bar" id="diffBar" style="display:none">
       <div class="diff-label">Temperature difference</div>
       <div class="diff-value" id="diffValue">—</div>
+    </div>
+
+    <div class="subscribe-wrap">
+      <div class="subscribe-label">Email weather updates</div>
+      <div class="subscribe-row">
+        <input type="email" id="subEmail" class="sub-input" placeholder="your@email.com" autocomplete="email" />
+        <select id="subFreq" class="sub-select">
+          <option value="daily_9am">Daily · 9am ET</option>
+          <option value="nightly_8pm">Nightly · 8pm ET</option>
+        </select>
+        <button id="subBtn" class="sub-btn" onclick="handleSubscribe()">Subscribe</button>
+      </div>
+      <div id="subMsg" class="sub-msg"></div>
     </div>
   </div>
 
@@ -942,6 +1032,79 @@
   buildCapitalSelect("left");
   buildCapitalSelect("right");
   fetchAll();
+
+  // ── Email subscription ──────────────────────────────────────────────────
+
+  async function handleSubscribe() {
+    const email = document.getElementById("subEmail").value.trim();
+    const frequency = document.getElementById("subFreq").value;
+    const btn = document.getElementById("subBtn");
+    const msg = document.getElementById("subMsg");
+
+    if (!email) {
+      msg.textContent = "Enter your email address.";
+      msg.className = "sub-msg error";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Subscribing…";
+    msg.textContent = "";
+    msg.className = "sub-msg";
+
+    const payload = {
+      email, frequency,
+      city1: { name: cities.left.name,  state: cities.left.state,  lat: cities.left.lat,  lon: cities.left.lon  },
+      city2: { name: cities.right.name, state: cities.right.state, lat: cities.right.lat, lon: cities.right.lon },
+    };
+
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const freqLabel = frequency === "daily_9am" ? "9am ET daily" : "8pm ET nightly";
+        msg.innerHTML = `Subscribed! Updates for <strong>${cities.left.name}</strong> vs <strong>${cities.right.name}</strong> at ${freqLabel}. ` +
+          `<a href="#" onclick="handleUnsubscribe(event)" style="color:#f87171;text-decoration:underline;">Unsubscribe</a>`;
+        msg.className = "sub-msg success";
+        btn.textContent = "Update";
+        btn.disabled = false;
+      } else {
+        msg.textContent = data.error || "Something went wrong.";
+        msg.className = "sub-msg error";
+        btn.textContent = "Subscribe";
+        btn.disabled = false;
+      }
+    } catch {
+      msg.textContent = "Could not connect. Are you running the server?";
+      msg.className = "sub-msg error";
+      btn.textContent = "Subscribe";
+      btn.disabled = false;
+    }
+  }
+
+  async function handleUnsubscribe(e) {
+    e.preventDefault();
+    const email = document.getElementById("subEmail").value.trim();
+    const frequency = document.getElementById("subFreq").value;
+    const msg = document.getElementById("subMsg");
+    if (!email) return;
+    try {
+      const res = await fetch("/api/unsubscribe", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, frequency }),
+      });
+      if (res.ok) {
+        msg.textContent = "Unsubscribed.";
+        msg.className = "sub-msg";
+        document.getElementById("subBtn").textContent = "Subscribe";
+      }
+    } catch {}
+  }
 </script>
 </body>
 </html>

@@ -4,7 +4,11 @@
       "Bash(open *)",
       "Bash(python3 -m http.server 8888)",
       "Bash(echo \"PID: $!\")",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8888/)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8888/)",
+      "Bash(npm install *)",
+      "Read(//usr/local/bin/**)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(git add *)"
     ]
   }
 }

@@ -1,0 +1,12 @@
+{
+  "name": "which-weather-server",
+  "version": "1.0.0",
+  "description": "Which Weather backend — email subscriptions and scheduled sends",
+  "main": "server.js",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.3",
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3"
+  }
+}
